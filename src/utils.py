@@ -1,10 +1,12 @@
 # Python modules.
 import os
 import random
+import re
 import zipfile
 
 
 # Other modules
+from kaggle.rest import ApiException
 import numpy as np
 import pandas as pd
 
@@ -48,12 +50,19 @@ def submit_file(message: str, submission_file="data/my_submission.csv", competit
 
     :param submission_file:
     :param competition_name: Kaggle competition name
+    :note: 
+    - get reason pleases
     """
     print(f"Submitting {submission_file} to competition:{competition_name}")
     from kaggle.api.kaggle_api_extended import KaggleApi
     kaggle_api = KaggleApi()
     kaggle_api.authenticate()
-    kaggle_api.competition_submit(file_name=submission_file, message=message, competition=competition_name)
+    try:
+        kaggle_api.competition_submit(file_name=submission_file, message=message, competition=competition_name)
+    except ApiException as exc:
+        if "Submission not allowed" in str(exc):
+            print("Submission not allowed.")
+            print(str(exc))
 
 
 def get_submission_scores(competition_name="playground-series-s5e2") -> None:
@@ -107,5 +116,5 @@ def prepare_submission(
     df_final = df_final.rename(columns={"prediction": "Price"})
     df_final["Price"] = df_final.Price.fillna(value=0.0)
     print(f"Generating output: {output_path}.")
-    df_final.to_csv(output_path, sep=",", index=False)
+    df_final.to_csv(output_path, sep=",", index=False, float_format="%.2f")
     
