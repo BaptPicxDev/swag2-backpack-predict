@@ -1,6 +1,12 @@
 # Python modules.
 import os
+import random
 import zipfile
+
+
+# Other modules
+import numpy as np
+import pandas as pd
 
 
 # Functions
@@ -66,3 +72,15 @@ def get_submission_scores(competition_name="playground-series-s5e2") -> None:
         private_score = submission.privateScore
         date = submission.date
         print(f"{submission_id} - {public_score} - {private_score} - {date}")
+
+
+def generate_random_prediction_file(input_path="data/sample_submission.csv", output_filepath="data/my_submission.csv") -> None:
+    """Generate a random file of prediction.
+
+    :parm input_path:
+    :param output_path:
+    """
+    df = pd.read_csv(filepath_or_buffer=input_path, sep=",")
+    df["Price"] = df["Price"].apply(lambda x: random.uniform(30.0, 90.0))
+    print(f"File {output_filepath} successfully generated.\n")
+    df.to_csv(output_filepath, sep=",", index=False)
