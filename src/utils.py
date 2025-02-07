@@ -84,3 +84,28 @@ def generate_random_prediction_file(input_path="data/sample_submission.csv", out
     df["Price"] = df["Price"].apply(lambda x: random.uniform(30.0, 90.0))
     print(f"File {output_filepath} successfully generated.\n")
     df.to_csv(output_filepath, sep=",", index=False)
+
+
+def prepare_submission(
+        df_predictions: pd.DataFrame,
+        submission_file="data/sample_submission.csv",
+        output_path="data/my_submission.csv",
+ ) -> pd.DataFrame:
+    """
+
+    :param df:
+    :param submission_file:
+    :param output_path:
+    """
+    df_sub = pd.read_csv(submission_file, sep=",")
+    df_final = pd.merge(
+        df_sub,
+        df_predictions,
+        on="id",
+        how="left",
+    )[["id", "prediction"]]
+    df_final = df_final.rename(columns={"prediction": "Price"})
+    df_final["Price"] = df_final.Price.fillna(value=0.0)
+    print(f"Generating output: {output_path}.")
+    df_final.to_csv(output_path, sep=",", index=False)
+    
