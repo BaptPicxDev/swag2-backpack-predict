@@ -90,7 +90,7 @@ def generate_random_prediction_file(input_path="data/sample_submission.csv", out
     :param output_path:
     """
     df = pd.read_csv(filepath_or_buffer=input_path, sep=",")
-    df["Price"] = df["Price"].apply(lambda x: random.uniform(30.0, 90.0))
+    df["Price"] = df["Price"].apply(lambda x: random.uniform(60.0, 100.0))
     print(f"File {output_filepath} successfully generated.\n")
     df.to_csv(output_filepath, sep=",", index=False)
 
@@ -114,7 +114,7 @@ def prepare_submission(
         how="left",
     )[["id", "prediction"]]
     df_final = df_final.rename(columns={"prediction": "Price"})
-    df_final["Price"] = df_final.Price.fillna(value=0.0)
+    df_final["Price"] = df_final.Price.fillna(value=80.0)
     print(f"Generating output: {output_path}.")
     df_final.to_csv(output_path, sep=",", index=False, float_format="%.2f")
     
