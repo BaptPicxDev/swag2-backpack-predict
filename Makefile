@@ -17,5 +17,4 @@ build-venv:
 .PHONY: clean-venv ## Clean virtual environment (local dev)
 clean-venv:
 	echo "Removing python3 virtual environment using poetry"
-	.venv/bin/python3 -m pip uninstall .
 	rm -rf .venv
