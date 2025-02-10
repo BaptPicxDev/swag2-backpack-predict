@@ -5,13 +5,13 @@ import re
 import zipfile
 
 
-# Other modules
+# Other modules.
 from kaggle.rest import ApiException
 import numpy as np
 import pandas as pd
 
 
-# Functions
+# Functions.
 def unzip_file(file_path="data/playground-series-s5e2.zip", output_folder="data/", remove_archive=True) -> None:
     """Unzip file with '.zip' extension.
 
