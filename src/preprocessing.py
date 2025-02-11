@@ -15,7 +15,6 @@ from pandas.api.types import (
     is_bool_dtype,
     is_datetime64_any_dtype,
 )
-from sklearn.preprocessing import QuantileTransformer
 from sklearn.preprocessing import (
     LabelEncoder,
     MinMaxScaler,
@@ -80,7 +79,7 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
         # Fit the encoder and transforming the feature.
         scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]])
         encoders_and_scalers[column_name] = enc
-        return scaled_and_encoded_df, encoders_and_scalers
+    return scaled_and_encoded_df, encoders_and_scalers
 
 
 def split_X_y_in_train_test_sets(X: pd.DataFrame, y: pd.Series) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:

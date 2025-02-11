@@ -9,6 +9,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
+# Environment
+# sns.set_theme("darkgrid")
+
+
 # Functions.
 def distplot(df: pd.DataFrame, variable_name: Text, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
     """Generate a distribution plot.
@@ -29,21 +33,29 @@ def distplot(df: pd.DataFrame, variable_name: Text, xlabel=None, ylabel=None, fi
     plt.show()
 
 
-def correlation_heatmap(df_corrlation: pd.DataFrame, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
+def correlation_heatmap(df_correlation: pd.DataFrame, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
     """Generate a heatmap to see correlation between variables.
 
     :param df_corrlation:
     :param xlabel:
     :param ylabel:
     :param figsize:
+    :example:
+    >>> corr = (
+            df
+            .select_dtypes(include=["float64", "int64"])
+            .drop(columns=["Price", "id", "index"], errors='ignore')
+            .corr()
+        )
+    >>> correlation_heatmap(df_correlation=df)
     """
     # Filtering id or index.
-    df_corrlation.drop(columns=['row_num','start_date','end_date','symbol'], errors='ignore', inplace=True)
+    df_correlation.drop(columns=["id", "index"], errors='ignore', inplace=True)
     plt.figure(figsize=figsize)
     sns.heatmap(
-        df_corrlation, 
-        xticklabels=df_corrlation.columns.values,
-        yticklabels=df_corrlation.columns.values,
+        df_correlation, 
+        xticklabels=df_correlation.columns.values,
+        yticklabels=df_correlation.columns.values,
     )
     plt.title('Correlation Matrix', fontsize=16)
     if xlabel:
@@ -75,4 +87,34 @@ def compare_predictions_and_real_values(predictions: pd.Series, real_values: pd.
         plt.xlabel(xlabel)
     if ylabel:
         plt.ylabel(ylabel)
+    plt.show()
+
+
+def draw_count_plot_to_study_features(df: pd.DataFrame, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
+    """Draw multiple count plot in order to understand categorical variables.
+
+    :param df:
+    :param xlabel:
+    :param ylabel:
+    :param figsize:
+    :note:
+    - Takes a long time. -> 9 minutes for 9 variables.
+    - By lowering the plt.subplot size it works faster.
+    """
+    # Set the figure size for the subplots.
+    plt.subplots(figsize=figsize)
+    # Compute the number of features.
+    df.drop(columns=["id", "index"], errors="ignore", inplace=True)
+    feature_list = list(df.select_dtypes(include=["object", "bool"]))
+    height = 3
+    width = 4
+    # Loop through the specified columns
+    for index, column_name in enumerate(feature_list):
+        # Create subplots in a 3x2 grid
+        plt.subplot(width, height, index + 1)
+        # Create a countplot for the current column
+        sns.countplot(data=df, x=column_name)
+        # Adjust subplot layout for better presentation
+        plt.tight_layout()
+    # Display the subplots
     plt.show()
