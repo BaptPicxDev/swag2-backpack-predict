@@ -1,9 +1,11 @@
 # Python modules.
 from typing import (
+    List,
     Text,
 )
 
 # Other modules.
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -121,4 +123,32 @@ def draw_count_plot_to_study_features(df: pd.DataFrame, xlabel=None, ylabel=None
         # Adjust subplot layout for better presentation
         plt.tight_layout()
     # Display the subplots
+    plt.show()
+
+
+def vizualize_feature_importance(feature_importance: np.ndarray, feature_names: List[Text], xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
+    """Vizualize feature importance.
+    Output is in percent.
+
+    :param feature_importance:
+    :param feature_names:
+    :param xlabel:
+    :param ylabel:
+    :param figsize:
+    """
+    plt.figure(figsize=figsize)
+    sns.barplot(
+        x="feature_importance",
+        y="feature_names",
+        data=pd.DataFrame({
+            "feature_importance": abs(100 * feature_importance).tolist()[0],
+            "feature_names": feature_names,
+        }),
+        palette="viridis",
+    )
+    plt.title("Feature Importance from Linear Regression")
+    if xlabel:
+        plt.xlabel(xlabel)
+    if ylabel:
+        plt.ylabel(ylabel)
     plt.show()
