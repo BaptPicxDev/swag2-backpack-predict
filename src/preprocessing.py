@@ -19,6 +19,7 @@ from sklearn.preprocessing import (
     LabelEncoder,
     MinMaxScaler,
     PowerTransformer,  # Combat skewness
+    PolynomialFeatures,
 )
 from sklearn.model_selection import train_test_split
 
@@ -40,7 +41,7 @@ def fill_df_navalues(df: pd.DataFrame) -> pd.DataFrame:
         if is_object_dtype(df_filled[column_name]):
             df_filled[column_name] = df_filled[column_name].fillna(value="Unknown")
         elif is_numeric_dtype(df_filled[column_name]):
-            df_filled[column_name] = df_filled[column_name].fillna(value=0.0)
+            df_filled[column_name] = df_filled[column_name].fillna(value=df_filled[column_name].mean())
         elif is_bool_dtype(df_filled[column_name]):
             df_filled[column_name] = df_filled[column_name].fillna(value=False)
         elif is_datetime64_any_dtype(df_filled[column_name]):
@@ -80,6 +81,15 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
         scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]])
         encoders_and_scalers[column_name] = enc
     return scaled_and_encoded_df, encoders_and_scalers
+
+
+def create_polynomial_features(df: pd.DataFrame, polynomial_degree=2) -> pd.DataFrame:
+    """
+    """
+    new_df = df.copy()
+    poly = PolynomialFeatures(polynomial_degree)
+    new_df = poly.fit_transform(new_df.drop(columns=["index", "id"], errors="ignore"))
+    return new_df
 
 
 def split_X_y_in_train_test_sets(X: pd.DataFrame, y: pd.Series) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
