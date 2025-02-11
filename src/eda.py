@@ -65,7 +65,7 @@ def correlation_heatmap(df_correlation: pd.DataFrame, xlabel=None, ylabel=None, 
     plt.show()
 
 
-def compare_predictions_and_real_values(predictions: pd.Series, real_values: pd.Series, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
+def compare_predictions_and_real_values(df: pd.DataFrame, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
     """Draw
 
     :param df_corrlation:
@@ -75,11 +75,15 @@ def compare_predictions_and_real_values(predictions: pd.Series, real_values: pd.
     """
     plt.figure(figsize=figsize)
     sns.lineplot(
-        predictions,
+        data=df,
+        x="index",
+        y="predictions",
         label="predictions",
     )
     sns.lineplot(
-        real_values,
+        data=df,
+        x="index",
+        y="real_values",
         label="real_values",
     )
     plt.title("Real vs Predictions")
