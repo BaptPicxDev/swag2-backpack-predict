@@ -137,11 +137,12 @@ def vizualize_feature_importance(feature_importance: np.ndarray, feature_names: 
     :param figsize:
     """
     plt.figure(figsize=figsize)
+    abs_feature_importance = abs(feature_importance.reshape(-1))
     sns.barplot(
         x="feature_importance",
         y="feature_names",
         data=pd.DataFrame({
-            "feature_importance": abs(100 * feature_importance).tolist()[0],
+            "feature_importance": abs_feature_importance,
             "feature_names": feature_names,
         }),
         palette="viridis",
