@@ -18,6 +18,7 @@ from pandas.api.types import (
 from sklearn.preprocessing import (
     LabelEncoder,
     MinMaxScaler,
+    StandardScaler,
     PowerTransformer,  # Combat skewness
     PolynomialFeatures,
 )
@@ -73,12 +74,13 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
         # Preparing encoder & scaler.
         elif scaled_and_encoded_df[column_name].dtype in ["object", "category"]:
             enc = LabelEncoder()
+            scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].values.ravel())
         elif scaled_and_encoded_df[column_name].dtype == "float64":
-            enc = MinMaxScaler()
+            enc = StandardScaler()
+            scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].to_numpy())
         else:
             raise TypeError(f"{scaled_and_encoded_df[column_name].dtype}")
         # Fit the encoder and transforming the feature.
-        scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]])
         encoders_and_scalers[column_name] = enc
     return scaled_and_encoded_df, encoders_and_scalers
 
