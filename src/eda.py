@@ -144,8 +144,8 @@ def vizualize_feature_importance(feature_importance: np.ndarray, feature_names: 
         data=pd.DataFrame({
             "feature_importance": abs_feature_importance,
             "feature_names": feature_names,
-        }),
-        palette="viridis",
+        }).sort_values(by=["feature_importance"], ascending=False),
+        legend=False,
     )
     plt.title("Feature Importance from Linear Regression")
     if xlabel:
