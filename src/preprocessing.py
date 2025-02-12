@@ -39,11 +39,11 @@ def fill_df_navalues(df: pd.DataFrame) -> pd.DataFrame:
     # Listing column_names
     for column_name in df.columns:
         if is_object_dtype(df_filled[column_name]):
-            df_filled[column_name] = df_filled[column_name].fillna(value="Unknown")
+            df_filled[column_name] = df_filled[column_name].fillna(value=df_filled[column_name].mode()[0])
         elif is_numeric_dtype(df_filled[column_name]):
             df_filled[column_name] = df_filled[column_name].fillna(value=df_filled[column_name].mean())
         elif is_bool_dtype(df_filled[column_name]):
-            df_filled[column_name] = df_filled[column_name].fillna(value=False)
+            df_filled[column_name] = df_filled[column_name].fillna(value=df_filled[column_name].mode()[0])
         elif is_datetime64_any_dtype(df_filled[column_name]):
             min_date = df_filled[column_name].min()
             fill_date = min_date if pd.notna(min_date) else pd.Timestamp.today()
@@ -71,7 +71,7 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
         if column_name == "id":
             continue
         # Preparing encoder & scaler.
-        elif scaled_and_encoded_df[column_name].dtype == "object":
+        elif scaled_and_encoded_df[column_name].dtype in ["object", "category"]:
             enc = LabelEncoder()
         elif scaled_and_encoded_df[column_name].dtype == "float64":
             enc = MinMaxScaler()

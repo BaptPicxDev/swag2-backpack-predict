@@ -152,3 +152,48 @@ def vizualize_feature_importance(feature_importance: np.ndarray, feature_names: 
     if ylabel:
         plt.ylabel(ylabel)
     plt.show()
+
+
+def vizualise_residual(
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+        subset=None,
+        xlabel=None,
+        ylabel=None,
+        figsize=(19, 10),
+        ) -> None:
+    """Generate a scatter plot that helps to interpret residual
+
+    :param y_true:
+    :param y_pred:
+    :param subset:
+    :param xlabel:
+    :param ylabel:
+    :param figsize:
+    :note:
+    - filter inputs not to break.
+    - You should probably need to reshape the prediction with .reshape(-1) 
+        to have np.array([1, 2, 3]) and not np.array([[1], [2], [3]])
+    - If the result residual is around 0, randomly, we can conclude the linear model
+        is appropriate for modeling the data
+        https://study.com/skill/learn/how-to-interpret-a-residual-plot-explanation.html
+    """
+    plt.figure(figsize=figsize)
+    plt.title("Scatterplot. Residual graph y_true - y_pred.")
+    if subset:
+        df_residual = pd.DataFrame({
+            "prediction": y_pred[:subset],
+            "residual": (y_true - y_pred)[:subset],
+        })
+    else:
+        df_residual = pd.DataFrame({
+            "prediction": y_pred,
+            "residual": (y_true - y_pred),
+        })
+    sns.scatterplot(x="prediction", y="residual", data=df_residual)
+    sns.regplot(x="prediction", y="residual", data=df_residual, scatter=False, color="red")
+    if xlabel:
+        plt.xlabel(xlabel)
+    if ylabel:
+        plt.ylabel(ylabel)
+    plt.show()
