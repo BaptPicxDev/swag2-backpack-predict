@@ -8,6 +8,7 @@ from typing import (
 
 
 # Other modules.
+import numpy as np
 import pandas as pd
 from pandas.api.types import (
     is_numeric_dtype,
@@ -16,6 +17,7 @@ from pandas.api.types import (
     is_datetime64_any_dtype,
 )
 from sklearn.preprocessing import (
+    OneHotEncoder,
     LabelEncoder,
     MinMaxScaler,
     StandardScaler,
@@ -73,8 +75,10 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
             continue
         # Preparing encoder & scaler.
         elif scaled_and_encoded_df[column_name].dtype in ["object", "category"]:
-            enc = LabelEncoder()
-            scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].values.ravel())
+            # enc = LabelEncoder()
+            # scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].values.ravel())
+            enc = OneHotEncoder(sparse_output=False)
+            scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]])
         elif scaled_and_encoded_df[column_name].dtype == "float64":
             enc = StandardScaler()
             scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].to_numpy())
@@ -85,13 +89,23 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
     return scaled_and_encoded_df, encoders_and_scalers
 
 
-def create_polynomial_features(df: pd.DataFrame, polynomial_degree=2) -> pd.DataFrame:
+def create_polynomial_features(df: pd.DataFrame, polynomial_degree=3) -> Tuple[pd.DataFrame, PolynomialFeatures]:
+    """Use the PolynomialFeatures transformer to process input.
+
+    :param df:
+    :param polynomial_degree:
+    :return Tuple:
     """
-    """
-    new_df = df.copy()
-    poly = PolynomialFeatures(polynomial_degree)
-    new_df = poly.fit_transform(new_df.drop(columns=["index", "id"], errors="ignore"))
-    return new_df
+    new_df = df.copy().set_index(keys="id")
+    indexes = np.asarray(new_df.index).astype(int)
+    poly_enc = PolynomialFeatures(degree=polynomial_degree, include_bias=False)
+    polynomial_feature_values = poly_enc.fit_transform(new_df)
+    new_df = pd.DataFrame(
+        data=polynomial_feature_values,
+        index=indexes,
+        columns=["Original"] + [f"polynomial_{index}" for index in range(1, polynomial_feature_values.shape[1])],
+    )
+    return new_df.reset_index().rename(columns={"index": "id"}), poly_enc
 
 
 def split_X_y_in_train_test_sets(X: pd.DataFrame, y: pd.Series) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
