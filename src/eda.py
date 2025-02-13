@@ -2,6 +2,7 @@
 from typing import (
     List,
     Text,
+    Union,
 )
 
 # Other modules.
@@ -9,6 +10,13 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.linear_model import (
+    LinearRegression,
+    Ridge,
+    Lasso
+)
+from sklearn.ensemble import RandomForestRegressor
+from xgboost import XGBRegressor
 
 
 # Environment
@@ -126,7 +134,7 @@ def draw_count_plot_to_study_features(df: pd.DataFrame, xlabel=None, ylabel=None
     plt.show()
 
 
-def vizualize_feature_importance(feature_importance: np.ndarray, feature_names: List[Text], xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
+def vizualize_feature_importance(model: Union[LinearRegression, Ridge, Lasso, RandomForestRegressor, XGBRegressor], feature_names: List[Text], xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
     """Vizualize feature importance.
     Output is in percent.
 
@@ -136,8 +144,12 @@ def vizualize_feature_importance(feature_importance: np.ndarray, feature_names: 
     :param ylabel:
     :param figsize:
     """
-    plt.figure(figsize=figsize)
-    abs_feature_importance = abs(feature_importance.reshape(-1))
+    if isinstance(model, LinearRegression) or isinstance(model, Ridge) or isinstance(model, Lasso):
+        feature_importances = model.coef_
+    else:
+        feature_importances = model.feature_importances_
+        plt.figure(figsize=figsize)
+    abs_feature_importance = abs(feature_importances.reshape(-1))
     sns.barplot(
         x="feature_importance",
         y="feature_names",
