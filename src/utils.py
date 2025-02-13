@@ -119,6 +119,9 @@ def prepare_submission(
     df_final.to_csv(output_path, sep=",", index=False, float_format="%.2f")
 
 
-def make_a_sound() -> None:
-    """Just make a sound in order to know(for example) when training is finished."""
-    os.system("say 'training finished.'")
+def make_a_sound(message='training finished') -> None:
+    """Just make a sound in order to know(for example) when training is finished.
+
+    :param message:
+    """
+    os.system(f"say '{message}.'")

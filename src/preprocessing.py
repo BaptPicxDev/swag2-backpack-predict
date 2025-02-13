@@ -105,7 +105,7 @@ def encode_categories_using_encoders_and_scalers(df: pd.DataFrame, encoders_and_
         elif to_encode_df[column_name].dtype in ["object", "category"]:
             to_encode_df[column_name] = (
                 encoders_and_scalers[column_name]
-                .transform(to_encode_df.loc[:, [column_name]])
+                .transform(to_encode_df.loc[:, [column_name]].values.ravel())
             )
         elif to_encode_df[column_name].dtype == "float64":
             to_encode_df[column_name] = (
@@ -155,12 +155,14 @@ def generate_polynomial_column_using_polynomial_feature_encoder(df: pd.DataFrame
     ).reset_index().rename(columns={"index": "id"})
 
 
-def split_X_y_in_train_test_sets(X: pd.DataFrame, y: pd.Series) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
+def split_X_y_in_train_test_sets(X: pd.DataFrame, y: pd.Series, test_size=0.2, random_state=42) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     """Split data into Train & Test sets.
 
     :param X:
     :param y:
+    :param test_size:
+    :param random_state:
     :return:
     """
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
     return X_train, X_test, y_train, y_test
