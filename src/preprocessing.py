@@ -75,10 +75,10 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
             continue
         # Preparing encoder & scaler.
         elif scaled_and_encoded_df[column_name].dtype in ["object", "category"]:
-            # enc = LabelEncoder()
-            # scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].values.ravel())
-            enc = OneHotEncoder(sparse_output=False)
-            scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]])
+            enc = LabelEncoder()
+            scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].values.ravel())
+            # enc = OneHotEncoder(sparse_output=False)
+            # scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]])
         elif scaled_and_encoded_df[column_name].dtype == "float64":
             enc = StandardScaler()
             scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].to_numpy())
@@ -137,7 +137,7 @@ def create_polynomial_features(df: pd.DataFrame, polynomial_degree=3) -> Tuple[p
     return new_df.reset_index().rename(columns={"index": "id"}), poly_enc
 
 
-def generate_polynomial_column_using_polynomial_feature_encoder(df: pd.DataFrame, input_column_name: Text, polynomial_encoder: PolynomialFeatures) -> pd.DataFrame:
+def generate_polynomial_column_using_polynomial_feature_encoder(df: pd.DataFrame, polynomial_encoder: PolynomialFeatures) -> pd.DataFrame:
     """Use trained PolynomialFeatures to generate polynomial columns.
 
     :param df:
@@ -147,7 +147,7 @@ def generate_polynomial_column_using_polynomial_feature_encoder(df: pd.DataFrame
     # Creating a copy.
     df_polynomial = df.copy().set_index(keys="id")
     indexes = np.asarray(df_polynomial.index).astype(int)
-    polynomial_feature_values = polynomial_encoder.transform(df_polynomial.loc[:, [input_column_name]])
+    polynomial_feature_values = polynomial_encoder.transform(df_polynomial)
     return pd.DataFrame(
         data=polynomial_feature_values,
         index=indexes,
