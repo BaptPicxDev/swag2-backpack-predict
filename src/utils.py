@@ -117,4 +117,8 @@ def prepare_submission(
     df_final["Price"] = df_final.Price.fillna(value=80.0)
     print(f"Generating output: {output_path}.")
     df_final.to_csv(output_path, sep=",", index=False, float_format="%.2f")
-    
+
+
+def make_a_sound() -> None:
+    """Just make a sound in order to know(for example) when training is finished."""
+    os.system("say 'training finished.'")
