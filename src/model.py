@@ -70,8 +70,12 @@ def get_random_forest_model(random_state=42) -> Tuple[RandomForestRegressor, Lis
     :return RandomForestRegressor:
     """
     grid_search_parameters = {
-        "n_estimators": [5, 15, 50, 100, 200],  # Number of trees.
-        "max_depth": [2, 5, 10],  # Tree depth.
+        # Main parameters.
+        "n_estimators": [5, 15, 50, 100, 150],  # Number of trees.
+        "max_depth": [2, 4, 6],  # Tree depth.
+        # Deep parameters.
+        "max_features": ["auto", "sqrt", "log2"],
+        "criterion" :["gini", "entropy"],
     }
     return RandomForestRegressor(random_state=random_state), grid_search_parameters
 
