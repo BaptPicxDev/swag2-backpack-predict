@@ -1,6 +1,7 @@
 # Python modules.
 from typing import (
     Dict,
+    List,
     Text,
     Tuple,
     Union,
@@ -15,6 +16,7 @@ from pandas.api.types import (
     is_object_dtype,
     is_bool_dtype,
     is_datetime64_any_dtype,
+    is_integer_dtype,
 )
 from sklearn.preprocessing import (
     OneHotEncoder,
@@ -77,6 +79,7 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
         elif scaled_and_encoded_df[column_name].dtype in ["object", "category"]:
             enc = LabelEncoder()
             scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]].values.ravel())
+            scaled_and_encoded_df[column_name] = scaled_and_encoded_df[column_name].astype("category")
             # enc = OneHotEncoder(sparse_output=False)
             # scaled_and_encoded_df[column_name] = enc.fit_transform(scaled_and_encoded_df.loc[:, [column_name]])
         elif scaled_and_encoded_df[column_name].dtype == "float64":
@@ -107,6 +110,7 @@ def encode_categories_using_encoders_and_scalers(df: pd.DataFrame, encoders_and_
                 encoders_and_scalers[column_name]
                 .transform(to_encode_df.loc[:, [column_name]].values.ravel())
             )
+            to_encode_df[column_name] = to_encode_df[column_name].astype("category")
         elif to_encode_df[column_name].dtype == "float64":
             to_encode_df[column_name] = (
                 encoders_and_scalers[column_name]
@@ -153,6 +157,26 @@ def generate_polynomial_column_using_polynomial_feature_encoder(df: pd.DataFrame
         index=indexes,
         columns=["Original"] + [f"polynomial_{index}" for index in range(1, polynomial_feature_values.shape[1])],
     ).reset_index().rename(columns={"index": "id"})
+
+
+def get_dummies(df: pd.DataFrame) -> pd.DataFrame:
+    """Return a dummyfied DataFrame.
+    Basically, each column present a category with yes or no (0 and 1).
+    It allows models to easily differenciate -> better result.
+
+    :param df:
+    :return pd.DataFrame:
+    :note:
+    - ensure there is not too many distinct int, can fail otherwise, or take too long... 
+    """
+    # Listing int64 column types.
+    categorical_column_names = [column_name for column_name in df.columns if df[column_name].dtype.name == "category"]
+    return pd.get_dummies(
+        data=df,
+        prefix=categorical_column_names,
+        columns=categorical_column_names,
+        dtype=float,
+    )
 
 
 def split_X_y_in_train_test_sets(X: pd.DataFrame, y: pd.Series, test_size=0.2, random_state=42) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
