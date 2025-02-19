@@ -1,5 +1,6 @@
 # Python modules.
 import os
+import json
 import random
 import re
 import zipfile
@@ -60,9 +61,24 @@ def submit_file(message: str, submission_file="data/my_submission.csv", competit
     try:
         kaggle_api.competition_submit(file_name=submission_file, message=message, competition=competition_name)
     except ApiException as exc:
-        if "Submission not allowed" in str(exc):
-            print("Submission not allowed.")
-            print(str(exc))
+        match = re.search(r'HTTP response body: (\{.*\})', str(exc))
+        if match:
+            json_body = match.group(1)
+            try:
+                data = json.loads(json_body)
+                message = data.get("message", "")
+                
+                # Extract "Submission not allowed" message
+                if "Submission not allowed" in message:
+                    hours_match = re.search(r'(\d+\.\d+) hours', message)
+                    hours_left = hours_match.group(1) if hours_match else None
+                    print(f"Message: Submission not allowed.")
+                    if hours_left:
+                        print(f"Time remaining: {hours_left} hours.")
+            except json.JSONDecodeError:
+                raise exc
+        else:
+            raise exc
 
 
 def get_submission_scores(competition_name="playground-series-s5e2") -> None:
