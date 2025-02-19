@@ -17,20 +17,51 @@ from sklearn.model_selection import (
 from sklearn.linear_model import (
     LinearRegression,
     Ridge,
+    Lasso,
 )
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
 
 # Functions.
-def get_linear_regression_model() -> Tuple[Ridge, Dict]:
+def get_ridge_model() -> Tuple[Ridge, Dict]:
     """Regression model.
 
     :return Ridge: model linear regressio nRidge
     """
     grid_search_parameters = {
-        "alpha": [0.01, 0.1, 1.0], # Regularization strength.
+        "alpha": [
+            0.0001, 0.001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
+            0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
+            20, 50, 100, 500, 1000,
+        ], # Regularization strength.
     }
     return Ridge(), grid_search_parameters
+
+
+def get_lasso_model() -> Tuple[Lasso, Dict]:
+    """Regression model.
+
+    :return Lasso: model linear regressio nRidge
+    """
+    grid_search_parameters = {
+        "alpha": [
+            0.0001, 0.001, 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7,
+            0.8, 0.9, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0,
+            20, 50, 100, 500, 1000,
+        ], # Regularization strength.
+    }
+    return Lasso(), grid_search_parameters
+
+
+def get_linear_regression_model() -> Tuple[LinearRegression, Dict]:
+    """Regression model.
+
+    :return LinearRegression: model linear regressio nRidge
+    """
+    grid_search_parameters = {
+        "fit_intercept": [True, False],
+    }
+    return LinearRegression(), grid_search_parameters
 
 
 def get_random_forest_model(random_state=42) -> Tuple[RandomForestRegressor, List]:
@@ -39,8 +70,8 @@ def get_random_forest_model(random_state=42) -> Tuple[RandomForestRegressor, Lis
     :return RandomForestRegressor:
     """
     grid_search_parameters = {
-        "n_estimators": [50, 100, 200],  # Number of trees.
-        "max_depth": [5, 10],  # Tree depth.
+        "n_estimators": [5, 15, 50, 100, 200],  # Number of trees.
+        "max_depth": [2, 5, 10],  # Tree depth.
     }
     return RandomForestRegressor(random_state=random_state), grid_search_parameters
 
@@ -51,9 +82,15 @@ def get_xgboost_model(random_state=42) -> Tuple[XGBRegressor, Dict]:
     :return XGBRegressor:
     """
     grid_search_parameters = {
+        # Main parameters.
         'n_estimators': [50, 100, 150, 200],
         'max_depth': [3, 5, 7, 10],
         'learning_rate': [0.01, 0.1, 0.2, 0.3, 0.5],
+        # Deep parameters.
+        'min_child_weight': [1, 5, 10],
+        'gamma': [0.5, 1.5, 5],
+        'subsample': [0.6, 1.0],
+        'colsample_bytree': [0.6, 1.0],
     }
     return XGBRegressor(random_state=random_state), grid_search_parameters
 
