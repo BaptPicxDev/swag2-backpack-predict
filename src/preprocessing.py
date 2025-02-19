@@ -30,6 +30,40 @@ from sklearn.model_selection import train_test_split
 
 
 # Functions.
+def apply_log_to_output(df: pd.DataFrame, output_column_name: Text) -> pd.DataFrame:
+    """Apply numpy log function to output column.
+
+    :param df:
+    :param output_column_name:
+    :return pd.DataFrame:
+    """
+    # Verify type.
+    if not is_numeric_dtype(df[output_column_name]):
+        raise TypeError("")
+    # Create a copy for safety.
+    new_df = df.copy()
+    # Generating output.
+    new_df["log_" + output_column_name] = np.log1p(new_df[output_column_name].values.reshape(-1))
+    return new_df
+
+
+def reverse_log(df: pd.DataFrame, log_column_name: Text) -> pd.DataFrame:
+    """Apply numpy exp to reverse log1p function applied previously.
+
+    :param df:
+    :param log_column_name:
+    :return pd.DataFrame:
+    """
+    # Verify type.
+    if not is_numeric_dtype(df[log_column_name]):
+        raise TypeError("")
+    # Create a copy for safety.
+    new_df = df.copy()
+    # Generating output.
+    new_df["reverse_" + log_column_name] = np.expm1(new_df[log_column_name].values.reshape(-1))
+    return new_df
+
+
 def fill_df_navalues(df: pd.DataFrame) -> pd.DataFrame:
     """Fill na values depending on type.
     Super simple rules.
