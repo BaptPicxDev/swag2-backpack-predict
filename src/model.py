@@ -28,7 +28,7 @@ def get_linear_regression_model() -> Tuple[Ridge, Dict]:
     :return Ridge: model linear regressio nRidge
     """
     grid_search_parameters = {
-        "alpha": [0.01, 0.1, 1, 10], # Regularization strength.
+        "alpha": [0.01, 0.1, 1.0], # Regularization strength.
     }
     return Ridge(), grid_search_parameters
 
@@ -51,9 +51,9 @@ def get_xgboost_model(random_state=42) -> Tuple[XGBRegressor, Dict]:
     :return XGBRegressor:
     """
     grid_search_parameters = {
-        'n_estimators': [50, 100, 150],
-        'max_depth': [3, 5, 7],
-        'learning_rate': [0.01, 0.1, 0.2],
+        'n_estimators': [50, 100, 150, 200],
+        'max_depth': [3, 5, 7, 10],
+        'learning_rate': [0.01, 0.1, 0.2, 0.3, 0.5],
     }
     return XGBRegressor(random_state=random_state), grid_search_parameters
 
@@ -63,9 +63,8 @@ def run_grid_search_and_kfold(
         parameters: Dict[Text, List],
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
-        number_of_split=2,
+        number_of_split=3,
         scoring_method="r2",
-        random_state=42,
     ) -> Union[Ridge, RandomForestRegressor, XGBRegressor]:
     """Run KFold & GridSearch to find the best model.
 
@@ -78,10 +77,10 @@ def run_grid_search_and_kfold(
     :param random_state:
     :return Union[Ridge, RandomForestRegressor, XGBRegressor]: The best model.
     :runtime:
-    - 3hours for RandomForestRegressor/
+    - 3 hours for RandomForestRegressor. at least....
     """
     # KFold(n_splits=number_of_split, shuffle=True, random_state=random_state)
-    grid_search = GridSearchCV(model, parameters, cv=number_of_split, scoring=scoring_method)
+    grid_search = GridSearchCV(model, parameters, cv=number_of_split, scoring=scoring_method, verbose=3)
     grid_search.fit(X_train, y_train)
     return grid_search.best_estimator_
 
