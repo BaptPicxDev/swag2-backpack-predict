@@ -81,7 +81,7 @@ def submit_file(message: str, submission_file="data/my_submission.csv", competit
             raise exc
 
 
-def get_submission_scores(competition_name="playground-series-s5e2") -> None:
+def get_submission_scores(competition_name="playground-series-s5e2", subset=5) -> None:
     """Retrieve kaggle competition scores.
 
     :param competition_name: Kaggle competition name
@@ -91,7 +91,9 @@ def get_submission_scores(competition_name="playground-series-s5e2") -> None:
     kaggle_api = KaggleApi()
     kaggle_api.authenticate()
     submissions = kaggle_api.competition_submissions(competition_name)
-    for submission in submissions:
+    for index, submission in enumerate(submissions):
+        if subset and index > subset:
+            break
         submission_id = submission.ref
         public_score = submission.publicScore
         private_score = submission.privateScore
