@@ -9,6 +9,7 @@ from typing import (
 
 
 # Other modules.
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import (
     GridSearchCV,
@@ -19,8 +20,15 @@ from sklearn.linear_model import (
     Ridge,
     Lasso,
 )
+from sklearn.metrics import (
+    mean_squared_error,
+    make_scorer,
+)
 from sklearn.ensemble import RandomForestRegressor
 from xgboost import XGBRegressor
+from catboost import CatBoostRegressor
+from lightgbm import LGBMRegressor
+
 
 # Functions.
 def get_ridge_model() -> Tuple[Ridge, Dict]:
@@ -87,26 +95,54 @@ def get_xgboost_model(random_state=42) -> Tuple[XGBRegressor, Dict]:
     """
     grid_search_parameters = {
         # Main parameters.
-        'n_estimators': [50, 100, 150, 200],
-        'max_depth': [3, 5, 7, 10],
-        'learning_rate': [0.01, 0.1, 0.2, 0.3, 0.5],
+        'n_estimators': [50, 100, 150, 200, 250],
+        'max_depth': [3, 5, 7, 10, 12],
+        'learning_rate': [0.1, 0.3, 0.5, 0.7],
         # Deep parameters.
-        'min_child_weight': [1, 5, 10],
         'gamma': [0.5, 1.5, 5],
-        'subsample': [0.6, 1.0],
-        'colsample_bytree': [0.6, 1.0],
+        # 'min_child_weight': [1, 5], #, 10
+        # 'subsample': [0.6, 1.0],
+        # 'colsample_bytree': [0.6, 1.0],
     }
     return XGBRegressor(random_state=random_state), grid_search_parameters
 
 
+def get_catboost_model(random_state=42) -> Tuple[CatBoostRegressor, Dict]:
+    """Regression model.
+
+    :return CatBoostRegressor:
+    """
+    grid_search_parameters = {
+        # Main parameters.
+        'n_estimators': [50, 100, 150, 200, 250],
+        'max_depth': [3, 5, 7, 10, 12],
+        'learning_rate': [0.1, 0.3, 0.5, 0.7],
+    }
+    return CatBoostRegressor(random_state=random_state, verbose=0), grid_search_parameters
+
+
+def get_lgbm_model(random_state=42) -> Tuple[LGBMRegressor, Dict]:
+    """Regression model.
+
+    :return LGBMRegressor:
+    """
+    grid_search_parameters = {
+        # Main parameters.
+        'n_estimators': [50, 100, 150, 200, 250],
+        'max_depth': [3, 5, 7, 10, 12],
+        'learning_rate': [0.1, 0.3, 0.5, 0.7],
+    }
+    return LGBMRegressor(random_state=random_state), grid_search_parameters
+
+
 def run_grid_search_and_kfold(
-        model: Union[Ridge, RandomForestRegressor, XGBRegressor],
+        model: Union[Ridge, RandomForestRegressor, XGBRegressor, CatBoostRegressor, LGBMRegressor],
         parameters: Dict[Text, List],
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
         number_of_split=3,
-        scoring_method="r2",
-    ) -> Union[Ridge, RandomForestRegressor, XGBRegressor]:
+        scoring_method="rmse",
+    ) -> Tuple[Union[Ridge, RandomForestRegressor, XGBRegressor], Dict[Text, Text]]:
     """Run KFold & GridSearch to find the best model.
 
     :param model:
@@ -120,10 +156,17 @@ def run_grid_search_and_kfold(
     :runtime:
     - 3 hours for RandomForestRegressor. at least....
     """
+    def expm_rmse_scorer(y_true, y_pred):
+        """Custom scoring function that applies np.sqrt to MSE."""
+        mse = mean_squared_error(y_true, y_pred)
+        return np.sqrt(mse)
+    # Wrap it correctly for GridSearchCV
+    custom_scorer = make_scorer(expm_rmse_scorer, greater_is_better=False)
+    
     # KFold(n_splits=number_of_split, shuffle=True, random_state=random_state)
-    grid_search = GridSearchCV(model, parameters, cv=number_of_split, scoring=scoring_method, verbose=3)
+    grid_search = GridSearchCV(model, parameters, cv=number_of_split, scoring=custom_scorer, verbose=3)
     grid_search.fit(X_train, y_train)
-    return grid_search.best_estimator_
+    return grid_search.best_estimator_, grid_search.cv_results_
 
 
 if __name__ == "__main__":
