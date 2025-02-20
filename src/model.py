@@ -132,7 +132,7 @@ def get_lgbm_model(random_state=42) -> Tuple[LGBMRegressor, Dict]:
         'max_depth': [3, 5, 7, 10, 12],
         'learning_rate': [0.1, 0.3, 0.5, 0.7],
     }
-    return LGBMRegressor(random_state=random_state), grid_search_parameters
+    return LGBMRegressor(random_state=random_state, verbose=-1), grid_search_parameters
 
 
 def run_grid_search_and_kfold(
