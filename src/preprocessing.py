@@ -92,7 +92,10 @@ def fill_df_navalues(df: pd.DataFrame) -> pd.DataFrame:
     return df_filled
 
 
-def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Text, Union[LabelEncoder, MinMaxScaler]]]:
+def scale_and_encoder_features(
+        df: pd.DataFrame,
+        output_column_name: Text,
+    ) -> Tuple[pd.DataFrame, Dict[Text, Union[LabelEncoder, MinMaxScaler]]]:
     """Scale the features.
 
     :param df:
@@ -107,7 +110,7 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
     # Iterating over features.
     for column_name in scaled_and_encoded_df.columns:
         # Skipping identifier.
-        if column_name == "id":
+        if (column_name == "id") or (column_name == output_column_name):
             continue
         # Preparing encoder & scaler.
         elif scaled_and_encoded_df[column_name].dtype in ["object", "category"]:
@@ -126,7 +129,10 @@ def scale_and_encoder_features(df: pd.DataFrame) -> Tuple[pd.DataFrame, Dict[Tex
     return scaled_and_encoded_df, encoders_and_scalers
 
 
-def encode_categories_using_encoders_and_scalers(df: pd.DataFrame, encoders_and_scalers: Dict[Text, Union[LabelEncoder, OneHotEncoder, StandardScaler, MinMaxScaler]]) -> pd.DataFrame:
+def encode_categories_using_encoders_and_scalers(
+        df: pd.DataFrame,
+        encoders_and_scalers: Dict[Text, Union[LabelEncoder, OneHotEncoder, StandardScaler, MinMaxScaler]],
+    ) -> pd.DataFrame:
     """Use encoder to properly encode the DataFrame columns using trained encoders and scalers.
 
     :param df:
@@ -153,7 +159,6 @@ def encode_categories_using_encoders_and_scalers(df: pd.DataFrame, encoders_and_
         else:
             raise TypeError(f"{to_encode_df[column_name].dtype}")
     return to_encode_df
-
 
 
 def create_polynomial_features(df: pd.DataFrame, polynomial_degree=3) -> Tuple[pd.DataFrame, PolynomialFeatures]:
