@@ -95,11 +95,11 @@ def get_xgboost_model(random_state=42) -> Tuple[XGBRegressor, Dict]:
     """
     grid_search_parameters = {
         # Main parameters.
-        'n_estimators': [50, 100, 150, 200, 250],
-        'max_depth': [3, 5, 7, 10, 12],
-        'learning_rate': [0.1, 0.3, 0.5, 0.7],
+        'n_estimators': [50, 100, 150, 200, 250],  # Number of trees.
+        'max_depth': [3, 5, 7, 10],  # Tree depth.
+        'learning_rate': [0.01, 0.1, 0.5],  # Step size at each iteration.
         # Deep parameters.
-        'gamma': [0.5, 1.5, 5],
+        'gamma': [0.5, 1.0],
         # 'min_child_weight': [1, 5], #, 10
         # 'subsample': [0.6, 1.0],
         # 'colsample_bytree': [0.6, 1.0],
@@ -114,9 +114,11 @@ def get_catboost_model(random_state=42) -> Tuple[CatBoostRegressor, Dict]:
     """
     grid_search_parameters = {
         # Main parameters.
-        'n_estimators': [50, 100, 150, 200, 250],
-        'max_depth': [3, 5, 7, 10, 12],
-        'learning_rate': [0.1, 0.3, 0.5, 0.7],
+        'depth': [4, 7, 10],  # Depth of trees.
+        'iterations': [70, 200, 500],  # Number of boosting rounds.
+        'l2_leaf_reg': [1, 5, 10],  # Regularization parameter.
+        'learning_rate': [0.01, 0.05, 0.1],  # Step size at each iteration.
+        # 'border_count': [32, 64, 128],
     }
     return CatBoostRegressor(random_state=random_state, verbose=0), grid_search_parameters
 
@@ -128,20 +130,19 @@ def get_lgbm_model(random_state=42) -> Tuple[LGBMRegressor, Dict]:
     """
     grid_search_parameters = {
         # Main parameters.
-        'n_estimators': [50, 100, 150, 200, 250],
-        'max_depth': [3, 5, 7, 10, 12],
-        'learning_rate': [0.1, 0.3, 0.5, 0.7],
+        'n_estimators': [50, 100, 150, 200, 250],  # Number of trees.
+        'max_depth': [3, 5, 7, 10, 12],  # Tree depth.
+        'learning_rate': [0.1, 0.3, 0.5, 0.7],  # Step size at each iteration.
     }
     return LGBMRegressor(random_state=random_state, verbose=-1), grid_search_parameters
 
 
-def run_grid_search_and_kfold(
+def run_grid_search(
         model: Union[Ridge, RandomForestRegressor, XGBRegressor, CatBoostRegressor, LGBMRegressor],
         parameters: Dict[Text, List],
         X_train: pd.DataFrame,
         y_train: pd.DataFrame,
         number_of_split=3,
-        scoring_method="rmse",
     ) -> Tuple[Union[Ridge, RandomForestRegressor, XGBRegressor], Dict[Text, Text]]:
     """Run KFold & GridSearch to find the best model.
 
@@ -150,21 +151,23 @@ def run_grid_search_and_kfold(
     :param X_train:
     :param y_train:
     :param number_of_split:
-    :param scoring_method:
-    :param random_state:
     :return Union[Ridge, RandomForestRegressor, XGBRegressor]: The best model.
-    :runtime:
-    - 3 hours for RandomForestRegressor. at least....
     """
-    def expm_rmse_scorer(y_true, y_pred):
-        """Custom scoring function that applies np.sqrt to MSE."""
-        mse = mean_squared_error(y_true, y_pred)
-        return np.sqrt(mse)
+    def rmse_scorer(y_true: pd.Series, y_pred: pd.Series) -> np.ndarray:
+        """Custom scoring function that applies np.sqrt to MSE.
+        To update function, depending on competition!
+
+        :param y_true:
+        :param y_pred:
+        :return np.ndarray:
+        """
+        return np.sqrt(mean_squared_error(y_true, y_pred))
     # Wrap it correctly for GridSearchCV
-    custom_scorer = make_scorer(expm_rmse_scorer, greater_is_better=False)
-    
-    # KFold(n_splits=number_of_split, shuffle=True, random_state=random_state)
-    grid_search = GridSearchCV(model, parameters, cv=number_of_split, scoring=custom_scorer, verbose=3)
+    custom_scorer = make_scorer(rmse_scorer, greater_is_better=False)
+    # Setting up KFold, better than usual CV.
+    kf = KFold(n_splits=number_of_split, shuffle=False)
+    # Preparing GridSearch.
+    grid_search = GridSearchCV(model, parameters, cv=kf, scoring=custom_scorer, verbose=3)
     grid_search.fit(X_train, y_train)
     return grid_search.best_estimator_, grid_search.cv_results_
 
@@ -179,6 +182,5 @@ if __name__ == "__main__":
     y = data.target[:1000]
     # Model
     model, parameters = get_random_forest_model()
-    best = run_grid_search_and_kfold(model=model, parameters=parameters, X_train=X, y_train=y, number_of_split=2)
+    best = run_grid_search(model=model, parameters=parameters, X_train=X, y_train=y, number_of_split=2)
     print(type(best))
- 
