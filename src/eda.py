@@ -24,6 +24,28 @@ from xgboost import XGBRegressor
 
 
 # Functions.
+def boxplot(df: pd.DataFrame, column_name: Text, hue=None, xlabel=None, ylabel=None, figsize=(11, 8)) -> None:
+    """Generate a box plot.
+
+    :param df:
+    :param variable_name:
+    :param xlabel:
+    :param ylabel:
+    :param figsize:
+    """
+    plt.figure(figsize=figsize)
+    if hue:
+        sns.boxplot(df, x=column_name, hue=hue)
+    else:
+        sns.boxplot(df, x=column_name)
+    plt.title(f"Boxplot of {column_name}.")
+    if xlabel:
+        plt.xlabel(xlabel)
+    if ylabel:
+        plt.ylabel(ylabel)
+    plt.show()
+
+
 def distplot(df: pd.DataFrame, variable_name: Text, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
     """Generate a distribution plot.
 
