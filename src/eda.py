@@ -46,7 +46,7 @@ def boxplot(df: pd.DataFrame, column_name: Text, hue=None, xlabel=None, ylabel=N
     plt.show()
 
 
-def distplot(df: pd.DataFrame, variable_name: Text, xlabel=None, ylabel=None, figsize=(19, 10)) -> None:
+def distplot(df: pd.DataFrame, variable_name: Text, xlabel=None, ylabel=None, figsize=(19, 10), bins=40) -> None:
     """Generate a distribution plot.
 
     :param df:
@@ -56,7 +56,7 @@ def distplot(df: pd.DataFrame, variable_name: Text, xlabel=None, ylabel=None, fi
     :param figsize:
     """
     plt.figure(figsize=figsize)
-    sns.displot(df, x=variable_name, kind="hist", kde=True)
+    sns.displot(df[variable_name], kind="hist", kde=True, bins=bins)
     plt.title(f"Distribution of {variable_name}")
     if xlabel:
         plt.xlabel(xlabel)
