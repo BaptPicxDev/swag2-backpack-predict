@@ -44,7 +44,8 @@ def create_new_columns_based_on_categorical_columns(
     :return Tuple[pd.DataFrame, List[Text]]:
     """
     # Create a copy for safety.
-    new_df = df.copy()
+    # new_df = df.copy()
+    columns_to_create = {}
     # Iteration over columns.
     for column_name in categorical_columns:
         if column_name in ["id", "index"]:
@@ -52,13 +53,11 @@ def create_new_columns_based_on_categorical_columns(
         elif column_name == output_col_name:
             continue
         new_cn = f"{column_name.lower().replace(" ", "")}_wc"
-        new_df[new_cn] = (
-            (
-                new_df[column_name].astype("float32") * 100
-                + new_df[output_col_name]
-            ).astype("float32")
+        columns_to_create[new_cn] = (
+            df[column_name].astype("float16") * 100.0
+            + df[output_col_name]
         )
-    return new_df
+    return pd.concat([df, pd.DataFrame(columns_to_create)], axis=1)
 
 
 def compute_statistical_df_focusing_on_output_and_specific_column(
@@ -147,9 +146,9 @@ def remove_outliers(df: pd.DataFrame, threshold_number_of_outliers: int, outlier
     outlier_list = []
     for column_name in column_names:
         # 1st quartile (25%)
-        Q1 = np.percentile(new_df[column_name], 25)
+        Q1 = np.quantile(new_df[column_name], 0.15)
         # 3rd quartile (75%)
-        Q3 = np.percentile(new_df[column_name], 75)
+        Q3 = np.percentile(new_df[column_name], 0.85)
         # Interquartile range (IQR)
         IQR = Q3 - Q1
         # outlier step
